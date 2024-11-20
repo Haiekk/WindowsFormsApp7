@@ -20,6 +20,7 @@ namespace WindowsFormsApp7
         private int low, high;
         private bool shellSortAtivo = false;
         private Stopwatch stopwatch;
+        private int contadorOrdenacoes;
 
 
         public Form1()
@@ -28,6 +29,7 @@ namespace WindowsFormsApp7
             timer = new Timer();
             timer.Tick += Timer_Tick;
             ordenando = false;
+            contadorOrdenacoes = 0;
         }
 
         private void btn_iniciar_Click(object sender, EventArgs e)
@@ -105,10 +107,6 @@ namespace WindowsFormsApp7
                 }
                 else
                 {
-                    stopwatch.Stop();
-                    double tempoMs = stopwatch.Elapsed.TotalMilliseconds;
-                    lblTempoExecucao.Text = $"Tempo de execução: {tempoMs:F2} ms";
-                    timer.Stop();
                     ordenando = false;
                     insertionSortAtivo = false;
                     MessageBox.Show("Ordenação Insertion Sort concluída!");
@@ -147,12 +145,8 @@ namespace WindowsFormsApp7
                         }
                     }
 
-                    // Quando terminar, parar o timer
                     if (gap <= 1)
                     {
-                        stopwatch.Stop();
-                        double tempoMs = stopwatch.Elapsed.TotalMilliseconds;
-                        lblTempoExecucao.Text = $"Tempo de execução: {tempoMs:F2} ms";
                         timer.Stop();
                         ordenando = false;
                         shellSortAtivo = false;
@@ -201,6 +195,12 @@ namespace WindowsFormsApp7
 
         private void btn_SelectionSort_Click(object sender, EventArgs e)
         {
+            if (contadorOrdenacoes >= 2)
+            {
+                MessageBox.Show("Você atingiu o limite de ordenações. Por favor, clique em 'Limpar' para continuar.");
+                return;
+            }
+
             if (listaAleatoria == null || listaAleatoria.Count == 0)
             {
                 MessageBox.Show("Por favor, insira os valores no gráfico antes de ordenar.");
@@ -239,22 +239,24 @@ namespace WindowsFormsApp7
 
             timer.Start();
 
-            // Esperar a ordenação ser concluída
             while (timer.Enabled)
             {
                 Application.DoEvents();
             }
 
-            // Parar o cronômetro e exibir o tempo
-            stopwatch.Stop();
-            double tempoMs = stopwatch.Elapsed.TotalMilliseconds;
-            lblTempoExecucao.Text = $"Tempo de execução: {tempoMs:F2} ms";
+            contadorOrdenacoes++;
         }
 
         private void btn_insertion_Click(object sender, EventArgs e)
         {
             try
             {
+                if (contadorOrdenacoes >= 2)
+                {
+                    MessageBox.Show("Você atingiu o limite de ordenações. Por favor, clique em 'Limpar' para continuar.");
+                    return;
+                }
+
                 if (listaAleatoria == null || listaAleatoria.Count == 0)
                 {
                     MessageBox.Show("Por favor, insira os valores no gráfico antes de ordenar.");
@@ -271,7 +273,6 @@ namespace WindowsFormsApp7
                     return;
                 }
 
-                // Inicializa o cronômetro
                 if (stopwatch == null)
                 {
                     stopwatch = new Stopwatch();
@@ -280,16 +281,14 @@ namespace WindowsFormsApp7
 
                 ordenando = true;
                 insertionSortAtivo = true;
-                i = 1; // Configura o índice inicial para o Insertion Sort
+                i = 1;
 
-                // Atualizar o gráfico antes de iniciar a ordenação
                 grf_ordenacao.Series[0].Points.Clear();
                 foreach (var num in listaAleatoria)
                 {
                     grf_ordenacao.Series[0].Points.AddY(num);
                 }
 
-                // Iniciar o cronômetro e o timer
                 stopwatch.Start();
                 timer.Start();
             }
@@ -297,7 +296,10 @@ namespace WindowsFormsApp7
             {
                 MessageBox.Show($"Erro: {ex.Message}\nDetalhes: {ex.StackTrace}");
             }
+
+            contadorOrdenacoes++;
         }
+
         private void btn_limpar_Click(object sender, EventArgs e)
         {
             grf_ordenacao.Series.Clear();
@@ -319,61 +321,64 @@ namespace WindowsFormsApp7
             txtTamanhoLista.Clear();
             txt_timer.Clear();
 
-            // Limpar o tempo de execução e reiniciar o cronômetro
-            lblTempoExecucao.Text = "Tempo de execução:";
-            if (stopwatch != null) stopwatch.Reset();
+            contadorOrdenacoes = 0;
         }
 
         private void btn_quick_Click(object sender, EventArgs e)
         {
-            if (listaAleatoria == null || listaAleatoria.Count == 0)
+            try
             {
-                MessageBox.Show("Por favor, insira os valores no gráfico antes de ordenar.");
-                return;
-            }
-
-            if (int.TryParse(txt_timer.Text, out int intervalo) && intervalo > 0)
-            {
-                timer.Interval = intervalo;
-            }
-            else
-            {
-                MessageBox.Show("Por favor, insira um valor válido para o intervalo do timer.");
-                return;
-            }
-
-            // Reiniciar o cronômetro antes de iniciar a ordenação
-            if (stopwatch == null)
-            {
-                stopwatch = new Stopwatch();
-            }
-            stopwatch.Reset();
-            stopwatch.Start();
-
-            ordenando = true;
-            quickSortAtivo = true;
-            pilhaQuickSort = new Stack<(int low, int high)>();
-            pilhaQuickSort.Push((0, listaAleatoria.Count - 1));
-
-            grf_ordenacao.Series[0].Points.Clear();
-            foreach (var num in listaAleatoria)
-            {
-                grf_ordenacao.Series[0].Points.AddY(num);
-            }
-
-            timer.Start();
-
-            // Quando o timer parar, calcular o tempo de execução
-            timer.Tick += (s, args) =>
-            {
-                if (!ordenando)
+                if (contadorOrdenacoes >= 2)
                 {
-                    stopwatch.Stop();
-                    double tempoMs = stopwatch.Elapsed.TotalMilliseconds;
-                    lblTempoExecucao.Text = $"Tempo de execução: {tempoMs:F2} ms";
+                    MessageBox.Show("Você atingiu o limite de ordenações. Por favor, clique em 'Limpar' para continuar.");
+                    return;
                 }
-            };
+
+                if (listaAleatoria == null || listaAleatoria.Count == 0)
+                {
+                    MessageBox.Show("Por favor, insira os valores no gráfico antes de ordenar.");
+                    return;
+                }
+
+                if (int.TryParse(txt_timer.Text, out int intervalo) && intervalo > 0)
+                {
+                    timer.Interval = intervalo;
+                }
+                else
+                {
+                    MessageBox.Show("Por favor, insira um valor válido para o intervalo do timer.");
+                    return;
+                }
+
+                if (stopwatch == null)
+                {
+                    stopwatch = new Stopwatch();
+                }
+                stopwatch.Reset();
+                stopwatch.Start();
+
+                ordenando = true;
+                quickSortAtivo = true;
+                pilhaQuickSort = new Stack<(int low, int high)>();
+                pilhaQuickSort.Push((0, listaAleatoria.Count - 1));
+
+                grf_ordenacao.Series[0].Points.Clear();
+                foreach (var num in listaAleatoria)
+                {
+                    grf_ordenacao.Series[0].Points.AddY(num);
+                }
+
+                timer.Start();
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro: {ex.Message}\nDetalhes: {ex.StackTrace}");
+            }
+
+            contadorOrdenacoes++;
         }
+
 
         private void QuickSort(List<int> lista, int low, int high)
         {
@@ -446,38 +451,85 @@ namespace WindowsFormsApp7
 
         private void btn_shell_Click(object sender, EventArgs e)
         {
-            if (listaAleatoria == null || listaAleatoria.Count == 0)
+            try
             {
-                MessageBox.Show("Por favor, insira os valores no gráfico antes de ordenar.");
+                if (contadorOrdenacoes >= 2)
+                {
+                    MessageBox.Show("Você atingiu o limite de ordenações. Por favor, clique em 'Limpar' para continuar.");
+                    return;
+                }
+
+                if (listaAleatoria == null || listaAleatoria.Count == 0)
+                {
+                    MessageBox.Show("Por favor, insira os valores no gráfico antes de ordenar.");
+                    return;
+                }
+
+                if (int.TryParse(txt_timer.Text, out int intervalo) && intervalo > 0)
+                {
+                    timer.Interval = intervalo;
+                }
+                else
+                {
+                    MessageBox.Show("Por favor, insira um valor válido para o intervalo do timer.");
+                    return;
+                }
+
+                if (stopwatch == null)
+                {
+                    stopwatch = new Stopwatch();
+                }
+                stopwatch.Reset();
+                stopwatch.Start();
+
+                ordenando = true;
+                shellSortAtivo = true;
+                i = 0;
+                j = 0;
+
+                grf_ordenacao.Series[0].Points.Clear();
+                foreach (var num in listaAleatoria)
+                {
+                    grf_ordenacao.Series[0].Points.AddY(num);
+                }
+
+                timer.Start();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro: {ex.Message}\nDetalhes: {ex.StackTrace}");
+            }
+
+            contadorOrdenacoes++;
+        }
+
+        private void btn_Original_Click(object sender, EventArgs e)
+        {
+            if (listaOriginal == null || listaOriginal.Count == 0)
+            {
+                MessageBox.Show("Nenhuma lista original foi gerada ainda. Por favor, inicie o processo primeiro.");
                 return;
             }
 
-            if (int.TryParse(txt_timer.Text, out int intervalo) && intervalo > 0)
-            {
-                timer.Interval = intervalo;
-            }
-            else
-            {
-                MessageBox.Show("Por favor, insira um valor válido para o intervalo do timer.");
-                return;
-            }
+            listaAleatoria = new List<int>(listaOriginal);
 
-            ordenando = true;
-            i = 0;
-            j = 0;
-            shellSortAtivo = true;
-
-            // Limpa e atualiza o gráfico antes de começar
             grf_ordenacao.Series[0].Points.Clear();
             foreach (var num in listaAleatoria)
             {
                 grf_ordenacao.Series[0].Points.AddY(num);
             }
 
-            stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            timer.Start();
+            dataGridView1.Rows.Clear();
+            ordenando = false;
+            insertionSortAtivo = false;
+            shellSortAtivo = false;
+            quickSortAtivo = false;
+            pilhaQuickSort = null;
+            i = 0;
+            j = 0;
+            low = 0;
+            high = listaAleatoria.Count - 1;
+            if (stopwatch != null) stopwatch.Reset();
         }
 
         private void AtualizarGrafico()
