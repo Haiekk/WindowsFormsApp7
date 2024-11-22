@@ -21,6 +21,7 @@ namespace WindowsFormsApp7
         private bool shellSortAtivo = false;
         private Stopwatch stopwatch;
         private int contadorOrdenacoes;
+        private int gap;
 
 
         public Form1()
@@ -116,45 +117,45 @@ namespace WindowsFormsApp7
             }
             else if (shellSortAtivo)
             {
-                if (i < listaAleatoria.Count)
+                if (gap > 0)
                 {
-                    int gap = listaAleatoria.Count / 2;
-
-                    while (gap > 0)
+                    // O loop externo percorre os elementos começando do índice gap.
+                    if (j < listaAleatoria.Count)
                     {
-                        for (int k = gap; k < listaAleatoria.Count; k++)
+                        int temp = listaAleatoria[j];
+                        int k = j;
+
+                        // Loop interno para realizar deslocamentos.
+                        while (k >= gap && listaAleatoria[k - gap] > temp)
                         {
-                            int temp = listaAleatoria[k];
-                            j = k;
-
-                            while (j >= gap && listaAleatoria[j - gap] > temp)
-                            {
-                                listaAleatoria[j] = listaAleatoria[j - gap];
-                                j -= gap;
-                            }
-
-                            listaAleatoria[j] = temp;
+                            listaAleatoria[k] = listaAleatoria[k - gap];
+                            k -= gap;
                         }
 
-                        gap /= 2;
+                        listaAleatoria[k] = temp;
 
-                        grf_ordenacao.Series[0].Points.Clear();
-                        foreach (var num in listaAleatoria)
-                        {
-                            grf_ordenacao.Series[0].Points.AddY(num);
-                        }
+                        j++; // Avança para o próximo índice.
+
+                        // Atualiza o gráfico após cada iteração de j.
+                        AtualizarGrafico();
+                        return; // Sai para permitir a visualização gradual.
                     }
-
-                    if (gap <= 1)
+                    else
                     {
-                        timer.Stop();
-                        ordenando = false;
-                        shellSortAtivo = false;
-
-                        MessageBox.Show("Ordenação Shell Sort concluída!");
-
-                        AtualizarDataGridView();
+                        // Reduz o gap e reinicia o índice j.
+                        gap = (int)(gap / 2.2); // Redução do gap.
+                        j = gap; // Reinicia para o próximo ciclo.
                     }
+                }
+                else
+                {
+                    // Finaliza a ordenação.
+                    shellSortAtivo = false;
+                    ordenando = false;
+                    timer.Stop();
+
+                    MessageBox.Show("Ordenação Shell Sort concluída!");
+                    AtualizarDataGridView();
                 }
             }
             else
@@ -475,17 +476,11 @@ namespace WindowsFormsApp7
                     return;
                 }
 
-                if (stopwatch == null)
-                {
-                    stopwatch = new Stopwatch();
-                }
-                stopwatch.Reset();
-                stopwatch.Start();
-
                 ordenando = true;
                 shellSortAtivo = true;
-                i = 0;
-                j = 0;
+
+                gap = listaAleatoria.Count / 2;
+                j = gap; // Começa com o gap atual.
 
                 grf_ordenacao.Series[0].Points.Clear();
                 foreach (var num in listaAleatoria)
@@ -502,6 +497,7 @@ namespace WindowsFormsApp7
 
             contadorOrdenacoes++;
         }
+
 
         private void btn_Original_Click(object sender, EventArgs e)
         {
