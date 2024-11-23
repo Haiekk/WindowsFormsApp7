@@ -28,8 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.grf_ordenacao = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.txtTamanhoLista = new System.Windows.Forms.TextBox();
             this.txt_timer = new System.Windows.Forms.TextBox();
@@ -58,13 +58,13 @@
             // 
             // grf_ordenacao
             // 
-            chartArea1.Name = "ChartArea1";
-            this.grf_ordenacao.ChartAreas.Add(chartArea1);
+            chartArea2.Name = "ChartArea1";
+            this.grf_ordenacao.ChartAreas.Add(chartArea2);
             this.grf_ordenacao.Location = new System.Drawing.Point(12, 10);
             this.grf_ordenacao.Name = "grf_ordenacao";
-            series1.ChartArea = "ChartArea1";
-            series1.Name = "Series1";
-            this.grf_ordenacao.Series.Add(series1);
+            series2.ChartArea = "ChartArea1";
+            series2.Name = "Series1";
+            this.grf_ordenacao.Series.Add(series2);
             this.grf_ordenacao.Size = new System.Drawing.Size(563, 268);
             this.grf_ordenacao.TabIndex = 0;
             this.grf_ordenacao.Text = "chart1";
@@ -195,6 +195,7 @@
             this.btn_binario.TabIndex = 13;
             this.btn_binario.Text = "Busca binária";
             this.btn_binario.UseVisualStyleBackColor = true;
+            this.btn_binario.Click += new System.EventHandler(this.btn_binario_Click);
             // 
             // btn_sequencial
             // 
@@ -204,6 +205,7 @@
             this.btn_sequencial.TabIndex = 14;
             this.btn_sequencial.Text = "Busca sequencial";
             this.btn_sequencial.UseVisualStyleBackColor = true;
+            this.btn_sequencial.Click += new System.EventHandler(this.btn_sequencial_Click);
             // 
             // txt_numero
             // 

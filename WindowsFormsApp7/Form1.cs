@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using System.Diagnostics;
+using System.Drawing;
 
 namespace WindowsFormsApp7
 {
@@ -20,8 +21,14 @@ namespace WindowsFormsApp7
         private int low, high;
         private bool shellSortAtivo = false;
         private Stopwatch stopwatch;
-        private int contadorOrdenacoes;
         private int gap;
+        private int lowBinario, highBinario, midBinario, numeroBusca;
+        private bool buscaBinariaAtiva;
+        private int indiceSequencial;
+        private bool buscaSequencialAtiva;
+        private bool ordenacaoAtiva = false;  
+        private int index1 = 0;               
+        private int index2 = 1;               
 
 
         public Form1()
@@ -30,7 +37,6 @@ namespace WindowsFormsApp7
             timer = new Timer();
             timer.Tick += Timer_Tick;
             ordenando = false;
-            contadorOrdenacoes = 0;
         }
 
         private void btn_iniciar_Click(object sender, EventArgs e)
@@ -196,12 +202,6 @@ namespace WindowsFormsApp7
 
         private void btn_SelectionSort_Click(object sender, EventArgs e)
         {
-            if (contadorOrdenacoes >= 2)
-            {
-                MessageBox.Show("Você atingiu o limite de ordenações. Por favor, clique em 'Limpar' para continuar.");
-                return;
-            }
-
             if (listaAleatoria == null || listaAleatoria.Count == 0)
             {
                 MessageBox.Show("Por favor, insira os valores no gráfico antes de ordenar.");
@@ -244,20 +244,12 @@ namespace WindowsFormsApp7
             {
                 Application.DoEvents();
             }
-
-            contadorOrdenacoes++;
         }
 
         private void btn_insertion_Click(object sender, EventArgs e)
         {
             try
             {
-                if (contadorOrdenacoes >= 2)
-                {
-                    MessageBox.Show("Você atingiu o limite de ordenações. Por favor, clique em 'Limpar' para continuar.");
-                    return;
-                }
-
                 if (listaAleatoria == null || listaAleatoria.Count == 0)
                 {
                     MessageBox.Show("Por favor, insira os valores no gráfico antes de ordenar.");
@@ -297,8 +289,6 @@ namespace WindowsFormsApp7
             {
                 MessageBox.Show($"Erro: {ex.Message}\nDetalhes: {ex.StackTrace}");
             }
-
-            contadorOrdenacoes++;
         }
 
         private void btn_limpar_Click(object sender, EventArgs e)
@@ -321,20 +311,12 @@ namespace WindowsFormsApp7
 
             txtTamanhoLista.Clear();
             txt_timer.Clear();
-
-            contadorOrdenacoes = 0;
         }
 
         private void btn_quick_Click(object sender, EventArgs e)
         {
             try
             {
-                if (contadorOrdenacoes >= 2)
-                {
-                    MessageBox.Show("Você atingiu o limite de ordenações. Por favor, clique em 'Limpar' para continuar.");
-                    return;
-                }
-
                 if (listaAleatoria == null || listaAleatoria.Count == 0)
                 {
                     MessageBox.Show("Por favor, insira os valores no gráfico antes de ordenar.");
@@ -376,8 +358,6 @@ namespace WindowsFormsApp7
             {
                 MessageBox.Show($"Erro: {ex.Message}\nDetalhes: {ex.StackTrace}");
             }
-
-            contadorOrdenacoes++;
         }
 
 
@@ -454,11 +434,6 @@ namespace WindowsFormsApp7
         {
             try
             {
-                if (contadorOrdenacoes >= 2)
-                {
-                    MessageBox.Show("Você atingiu o limite de ordenações. Por favor, clique em 'Limpar' para continuar.");
-                    return;
-                }
 
                 if (listaAleatoria == null || listaAleatoria.Count == 0)
                 {
@@ -495,9 +470,7 @@ namespace WindowsFormsApp7
                 MessageBox.Show($"Erro: {ex.Message}\nDetalhes: {ex.StackTrace}");
             }
 
-            contadorOrdenacoes++;
         }
-
 
         private void btn_Original_Click(object sender, EventArgs e)
         {
@@ -526,6 +499,197 @@ namespace WindowsFormsApp7
             low = 0;
             high = listaAleatoria.Count - 1;
             if (stopwatch != null) stopwatch.Reset();
+        }
+
+        private void btn_sequencial_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (listaAleatoria == null || listaAleatoria.Count == 0)
+                {
+                    MessageBox.Show("Por favor, insira os valores no gráfico antes de realizar a busca sequencial.");
+                    return;
+                }
+
+                if (!int.TryParse(txt_numero.Text, out numeroBusca))
+                {
+                    MessageBox.Show("Por favor, insira um número válido para buscar.");
+                    return;
+                }
+
+                // Reseta o estado da busca sequencial
+                indiceSequencial = 0;
+                buscaSequencialAtiva = true;
+
+                // Configura o Timer para a animação da busca sequencial.
+                timer.Tick -= Timer_Tick;
+                timer.Tick -= Timer_BuscaSequencial;
+                timer.Tick += Timer_BuscaSequencial;
+                timer.Interval = 50; // Intervalo para a animação da busca
+                timer.Start();
+
+                AtualizarGrafico(); // Exibe o gráfico inicial
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro: {ex.Message}\nDetalhes: {ex.StackTrace}");
+            }
+        }
+
+        private void Timer_BuscaSequencial(object sender, EventArgs e)
+        {
+            if (buscaSequencialAtiva)
+            {
+                if (indiceSequencial < listaAleatoria.Count)
+                {
+                    // Atualiza a cor da barra atual no gráfico
+                    AtualizarGrafico(indiceSequencial);
+
+                    // Verifica se o número foi encontrado
+                    if (listaAleatoria[indiceSequencial] == numeroBusca)
+                    {
+                        buscaSequencialAtiva = false;
+                        timer.Stop();
+                        MessageBox.Show($"Número {numeroBusca} encontrado no índice {indiceSequencial}!");
+                        return;
+                    }
+
+                    indiceSequencial++; // Avança para o próximo índice
+                }
+                else
+                {
+                    buscaSequencialAtiva = false;
+                    timer.Stop();
+                    MessageBox.Show("Número não encontrado na lista.");
+                }
+            }
+        }
+
+        private void AtualizarGrafico(int indiceAtual = -1)
+        {
+            // Atualiza o gráfico com base no índice fornecido
+            for (int i = 0; i < listaAleatoria.Count; i++)
+            {
+                if (i == indiceAtual)
+                {
+                    // Destaca o elemento atual sendo comparado
+                    grf_ordenacao.Series[0].Points[i].Color = System.Drawing.Color.Yellow;
+                }
+                else
+                {
+                    // Normaliza a cor dos outros elementos
+                    grf_ordenacao.Series[0].Points[i].Color = System.Drawing.Color.Blue;
+                }
+            }
+        }
+
+        private void btn_binario_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (listaAleatoria == null || listaAleatoria.Count == 0)
+                {
+                    MessageBox.Show("Por favor, insira os valores no gráfico antes de realizar a busca binária.");
+                    return;
+                }
+
+                if (!int.TryParse(txt_numero.Text, out numeroBusca))
+                {
+                    MessageBox.Show("Por favor, insira um número válido para buscar.");
+                    return;
+                }
+
+                listaAleatoria.Sort();
+
+                lowBinario = 0;
+                highBinario = listaAleatoria.Count - 1;
+                buscaBinariaAtiva = true;
+
+                AtualizarGrafico();
+
+                // Configura o Timer para animar a busca
+                timer.Tick -= Timer_Tick; 
+                timer.Tick -= Timer_BuscaBinaria; 
+                timer.Tick += Timer_BuscaBinaria; 
+                timer.Interval = 500; 
+                timer.Start();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro: {ex.Message}\nDetalhes: {ex.StackTrace}");
+            }
+        }
+
+        // Método para animar a busca binária
+        private void Timer_BuscaBinaria(object sender, EventArgs e)
+        {
+            if (!buscaBinariaAtiva)
+            {
+                timer.Stop(); // Garante que o Timer será parado se a busca estiver inativa
+                return;
+            }
+
+            if (lowBinario <= highBinario)
+            {
+                midBinario = (lowBinario + highBinario) / 2;
+
+                // Atualiza o gráfico destacando o intervalo de busca
+                AtualizarGrafico();
+                for (int k = lowBinario; k <= highBinario; k++)
+                {
+                    grf_ordenacao.Series[0].Points[k].Color = System.Drawing.Color.Yellow; // Intervalo atual
+                }
+                grf_ordenacao.Series[0].Points[midBinario].Color = System.Drawing.Color.Red; // Destaque para o elemento médio
+
+                // Verifica se encontrou o número
+                if (listaAleatoria[midBinario] == numeroBusca)
+                {
+                    grf_ordenacao.Series[0].Points[midBinario].Color = System.Drawing.Color.Green; // Número encontrado
+                    buscaBinariaAtiva = false; // Desativa a busca
+                    timer.Stop(); // Para o Timer
+                    MessageBox.Show($"Número {numeroBusca} encontrado no índice {midBinario}.");
+                }
+                else if (listaAleatoria[midBinario] < numeroBusca)
+                {
+                    lowBinario = midBinario + 1; // Ajusta o intervalo
+                }
+                else
+                {
+                    highBinario = midBinario - 1; // Ajusta o intervalo
+                }
+            }
+            else
+            {
+                // Busca concluída sem sucesso
+                buscaBinariaAtiva = false; 
+                timer.Stop(); 
+                MessageBox.Show($"Número {numeroBusca} não encontrado.");
+            }
+        }
+
+        private int BuscaBinaria(List<int> lista, int numero)
+        {
+            int inicio = 0;
+            int fim = lista.Count - 1;
+
+            while (inicio <= fim)
+            {
+                int meio = (inicio + fim) / 2;
+
+                if (lista[meio] == numero)
+                {
+                    return meio; // Retorna o índice do número encontrado.
+                }
+                else if (lista[meio] < numero)
+                {
+                    inicio = meio + 1;
+                }
+                else
+                {
+                    fim = meio - 1;
+                }
+            }
+            return -1; // Retorna -1 se o número não for encontrado.
         }
 
         private void AtualizarGrafico()
