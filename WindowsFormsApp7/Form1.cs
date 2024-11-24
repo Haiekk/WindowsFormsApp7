@@ -28,7 +28,10 @@ namespace WindowsFormsApp7
         private bool buscaSequencialAtiva;
         private bool ordenacaoAtiva = false;  
         private int index1 = 0;               
-        private int index2 = 1;               
+        private int index2 = 1;
+        private int comparacoes = 0;
+        private int trocas = 0;
+
 
 
         public Form1()
@@ -99,7 +102,9 @@ namespace WindowsFormsApp7
 
                     while (j >= 0 && listaAleatoria[j] > key)
                     {
+                        comparacoes++;
                         listaAleatoria[j + 1] = listaAleatoria[j];
+                        trocas++;
                         j--;
                     }
                     listaAleatoria[j + 1] = key;
@@ -116,6 +121,8 @@ namespace WindowsFormsApp7
                 {
                     ordenando = false;
                     insertionSortAtivo = false;
+                    timer.Stop();
+                    stopwatch.Stop();
                     MessageBox.Show("Ordenação Insertion Sort concluída!");
 
                     AtualizarDataGridView();
@@ -272,18 +279,37 @@ namespace WindowsFormsApp7
                 }
                 stopwatch.Reset();
 
+                // Resetar métricas
+                comparacoes = 0;
+                trocas = 0;
+
                 ordenando = true;
                 insertionSortAtivo = true;
                 i = 1;
 
+                // Atualizar gráfico com os valores iniciais
                 grf_ordenacao.Series[0].Points.Clear();
                 foreach (var num in listaAleatoria)
                 {
                     grf_ordenacao.Series[0].Points.AddY(num);
                 }
 
+                // Iniciar temporizador e cronômetro
                 stopwatch.Start();
                 timer.Start();
+
+                // Após a ordenação completa, atualizar informações no RichTextBox
+                timer.Tick += (s, ev) =>
+                {
+                    if (i >= listaAleatoria.Count) // Ordenação concluída
+                    {
+                        stopwatch.Stop();
+                        timer.Stop();
+                        ordenando = false;
+
+                        AtualizarNotas("Insertion Sort");
+                    }
+                };
             }
             catch (Exception ex)
             {
@@ -500,7 +526,7 @@ namespace WindowsFormsApp7
             high = listaAleatoria.Count - 1;
             if (stopwatch != null) stopwatch.Reset();
         }
-
+        
         private void btn_sequencial_Click(object sender, EventArgs e)
         {
             try
@@ -700,6 +726,15 @@ namespace WindowsFormsApp7
             {
                 grf_ordenacao.Series[0].Points.AddY(num);
             }
+        }
+        private void AtualizarNotas(string metodoOrdenacao)
+        {
+            string tempoExecucao = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\:ff");  // Formato: hh:mm:ss:ll
+            blc_notas.AppendText($"Método: {metodoOrdenacao}\n");
+            blc_notas.AppendText($"Quantidade de valores: {listaAleatoria.Count}\n");
+            blc_notas.AppendText($"Comparações: {comparacoes}\n");
+            blc_notas.AppendText($"Trocas: {trocas}\n");
+            blc_notas.AppendText($"Tempo de execução: {tempoExecucao}\n\n");
         }
 
         private void AtualizarDataGridView()
