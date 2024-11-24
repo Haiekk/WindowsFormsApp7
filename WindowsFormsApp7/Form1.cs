@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using System.Diagnostics;
 using System.Drawing;
+using System.Threading.Tasks;
 
 namespace WindowsFormsApp7
 {
@@ -97,16 +98,15 @@ namespace WindowsFormsApp7
                     {
                         listaAleatoria[j + 1] = listaAleatoria[j];
                         j--;
-                        numeroComparacoes++;
-                        numeroTrocas++;
+                        numeroComparacoes++;  // Conta apenas a comparação
                     }
-                    listaAleatoria[j + 1] = key;
-                    i++;
-                    grf_ordenacao.Series[0].Points.Clear();
-                    foreach (var num in listaAleatoria)
+                    if (j + 1 != i) // Troca só ocorre se o elemento foi movido
                     {
-                        grf_ordenacao.Series[0].Points.AddY(num);
+                        listaAleatoria[j + 1] = key;
+                        numeroTrocas++;  // Conta a troca
                     }
+                    i++;
+                    AtualizarGrafico();
                 }
                 else
                 {
@@ -120,34 +120,79 @@ namespace WindowsFormsApp7
             }
             else if (shellSortAtivo)
             {
-                if (gap > 0)
+                try
                 {
-                    if (j < listaAleatoria.Count)
+                    if (gap > 0)
                     {
-                        int temp = listaAleatoria[j];
-                        int k = j;
-                        while (k >= gap && listaAleatoria[k - gap] > temp)
+                        if (j < listaAleatoria.Count)
                         {
-                            listaAleatoria[k] = listaAleatoria[k - gap];
-                            k -= gap;
+                            int temp = listaAleatoria[j];
+                            int k = j;
+                            while (k >= gap && listaAleatoria[k - gap] > temp)
+                            {
+                                listaAleatoria[k] = listaAleatoria[k - gap];
+                                k -= gap;
+                                numeroComparacoes++;  
+                            }
+                            if (k != j)  
+                            {
+                                listaAleatoria[k] = temp;
+                                numeroTrocas++;  
+                            }
+                            j++;
+                            AtualizarGrafico();
                         }
-                        listaAleatoria[k] = temp;
-                        j++;
-                        AtualizarGrafico();
-                        return;
+                        else
+                        {
+                            gap = (int)(gap / 2.2);
+                            j = gap;
+                        }
                     }
                     else
                     {
-                        gap = (int)(gap / 2.2);
-                        j = gap;
+                        shellSortAtivo = false;
+                        ordenando = false;
+                        timer.Stop();
+
+                        if (stopwatch != null && stopwatch.IsRunning)
+                        {
+                            stopwatch.Stop();
+                        }
+                        AtualizarNotas("Shell Sort");
+                        MessageBox.Show("Ordenação Shell Sort concluída!");
+                        AtualizarDataGridView();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Erro durante a ordenação Shell Sort: {ex.Message}\n{ex.StackTrace}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            else if (quickSortAtivo)
+            {
+                if (pilhaQuickSort.Count > 0)
+                {
+                    var (low, high) = pilhaQuickSort.Pop();
+                    if (low < high)
+                    {
+                        int pi = Partition(listaAleatoria, low, high);
+                        pilhaQuickSort.Push((low, pi - 1));
+                        pilhaQuickSort.Push((pi + 1, high));
+                        AtualizarGrafico();
+                        numeroComparacoes++;
+                        numeroTrocas++;
                     }
                 }
                 else
                 {
-                    shellSortAtivo = false;
+                    pilhaQuickSort = new Stack<(int, int)>();
+                    pilhaQuickSort.Push((0, listaAleatoria.Count - 1));
+                    quickSortAtivo = false;
                     ordenando = false;
                     timer.Stop();
-                    MessageBox.Show("Ordenação Shell Sort concluída!");
+                    stopwatch.Stop();
+                    AtualizarNotas("Quick Sort");
+                    MessageBox.Show("Ordenação Quick Sort concluída!");
                     AtualizarDataGridView();
                 }
             }
@@ -158,24 +203,27 @@ namespace WindowsFormsApp7
                     int trocaAtual = i;
                     for (j = i + 1; j < listaAleatoria.Count; j++)
                     {
+                        numeroComparacoes++;
                         if (listaAleatoria[j] < listaAleatoria[trocaAtual])
                         {
                             trocaAtual = j;
                         }
                     }
-                    int temp = listaAleatoria[i];
-                    listaAleatoria[i] = listaAleatoria[trocaAtual];
-                    listaAleatoria[trocaAtual] = temp;
-                    i++;
-                    grf_ordenacao.Series[0].Points.Clear();
-                    foreach (var num in listaAleatoria)
+                    if (trocaAtual != i)
                     {
-                        grf_ordenacao.Series[0].Points.AddY(num);
+                        int temp = listaAleatoria[i];
+                        listaAleatoria[i] = listaAleatoria[trocaAtual];
+                        listaAleatoria[trocaAtual] = temp;
+                        numeroTrocas++;
                     }
+                    i++;
+                    AtualizarGrafico();
                 }
                 else
                 {
                     timer.Stop();
+                    stopwatch.Stop();
+                    AtualizarNotas("Selection Sort");
                     MessageBox.Show("Ordenação Selection Sort concluída!");
                     ordenando = false;
                     AtualizarDataGridView();
@@ -198,27 +246,23 @@ namespace WindowsFormsApp7
                 MessageBox.Show("Por favor, insira um valor válido para o intervalo do timer.");
                 return;
             }
+            numeroComparacoes = 0;
+            numeroTrocas = 0;
+            if (stopwatch == null)
+            {
+                stopwatch = new Stopwatch();
+            }
+            stopwatch.Reset();
+            stopwatch.Start();
+
             ordenando = true;
             i = 0;
-            j = 0;
-            insertionSortAtivo = false;
-            grf_ordenacao.Series[0].Points.Clear();
-            foreach (var num in listaAleatoria)
-            {
-                grf_ordenacao.Series[0].Points.AddY(num);
-            }
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
             grf_ordenacao.Series[0].Points.Clear();
             foreach (var num in listaAleatoria)
             {
                 grf_ordenacao.Series[0].Points.AddY(num);
             }
             timer.Start();
-            while (timer.Enabled)
-            {
-                Application.DoEvents();
-            }
         }
         private void btn_insertion_Click(object sender, EventArgs e)
         {
@@ -329,16 +373,23 @@ namespace WindowsFormsApp7
         private int Partition(List<int> lista, int low, int high)
         {
             int pivot = lista[high];
-            int i = (low - 1);
+            int i = low - 1;
             for (int j = low; j < high; j++)
             {
+                numeroComparacoes++;
                 if (lista[j] < pivot)
                 {
                     i++;
-                    Swap(lista, i, j);
+                    int temp = lista[i];
+                    lista[i] = lista[j];
+                    lista[j] = temp;
+                    numeroTrocas++;
                 }
             }
-            Swap(lista, i + 1, high);
+            int temp2 = lista[i + 1];
+            lista[i + 1] = lista[high];
+            lista[high] = temp2;
+            numeroTrocas++;
             return i + 1;
         }
         private void Swap(List<int> lista, int i, int j)
@@ -391,6 +442,11 @@ namespace WindowsFormsApp7
                     MessageBox.Show("Por favor, insira um valor válido para o intervalo do timer.");
                     return;
                 }
+                if (stopwatch == null)
+                {
+                    stopwatch = new Stopwatch();
+                }
+                stopwatch.Start();  
                 ordenando = true;
                 shellSortAtivo = true;
                 gap = listaAleatoria.Count / 2;
@@ -432,7 +488,7 @@ namespace WindowsFormsApp7
             high = listaAleatoria.Count - 1;
             if (stopwatch != null) stopwatch.Reset();
         }
-        private void btn_sequencial_Click(object sender, EventArgs e)
+        private async void btn_sequencial_Click(object sender, EventArgs e)
         {
             try
             {
@@ -448,12 +504,23 @@ namespace WindowsFormsApp7
                 }
                 indiceSequencial = 0;
                 buscaSequencialAtiva = true;
-                timer.Tick -= Timer_Tick;
-                timer.Tick -= Timer_BuscaSequencial;
-                timer.Tick += Timer_BuscaSequencial;
-                timer.Interval = 50;
-                timer.Start();
                 AtualizarGrafico();
+                while (buscaSequencialAtiva && indiceSequencial < listaAleatoria.Count)
+                {
+                    AtualizarGrafico(indiceSequencial);
+                    await Task.Delay(50); 
+                    if (listaAleatoria[indiceSequencial] == numeroBusca)
+                    {
+                        buscaSequencialAtiva = false;
+                        MessageBox.Show($"Número {numeroBusca} encontrado no índice {indiceSequencial}!");
+                        return;
+                    }
+                    indiceSequencial++;
+                }
+                if (buscaSequencialAtiva)
+                {
+                    MessageBox.Show("Número não encontrado na lista.");
+                }
             }
             catch (Exception ex)
             {
@@ -498,7 +565,7 @@ namespace WindowsFormsApp7
                 }
             }
         }
-        private void btn_binario_Click(object sender, EventArgs e)
+        private async void btn_binario_Click(object sender, EventArgs e)
         {
             try
             {
@@ -517,16 +584,44 @@ namespace WindowsFormsApp7
                 highBinario = listaAleatoria.Count - 1;
                 buscaBinariaAtiva = true;
                 AtualizarGrafico();
-                timer.Tick -= Timer_Tick;
-                timer.Tick -= Timer_BuscaBinaria;
-                timer.Tick += Timer_BuscaBinaria;
-                timer.Interval = 500;
-                timer.Start();
+                while (buscaBinariaAtiva && lowBinario <= highBinario)
+                {
+                    midBinario = (lowBinario + highBinario) / 2;
+                    AtualizarGrafico();
+                    for (int k = lowBinario; k <= highBinario; k++)
+                    {
+                        grf_ordenacao.Series[0].Points[k].Color = System.Drawing.Color.Yellow;
+                    }
+                    grf_ordenacao.Series[0].Points[midBinario].Color = System.Drawing.Color.Red;
+                    await Task.Delay(500); 
+                    if (listaAleatoria[midBinario] == numeroBusca)
+                    {
+                        grf_ordenacao.Series[0].Points[midBinario].Color = System.Drawing.Color.Green;
+                        buscaBinariaAtiva = false;
+                        MessageBox.Show($"Número {numeroBusca} encontrado no índice {midBinario}.");
+                    }
+                    else if (listaAleatoria[midBinario] < numeroBusca)
+                    {
+                        lowBinario = midBinario + 1;
+                    }
+                    else
+                    {
+                        highBinario = midBinario - 1;
+                    }
+                }
+                if (buscaBinariaAtiva)
+                {
+                    MessageBox.Show($"Número {numeroBusca} não encontrado.");
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Erro: {ex.Message}\nDetalhes: {ex.StackTrace}");
             }
+        }
+        private void btn_limpardesc_Click(object sender, EventArgs e)
+        {
+            blc_notas.Clear();
         }
         private void Timer_BuscaBinaria(object sender, EventArgs e)
         {

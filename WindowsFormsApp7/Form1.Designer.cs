@@ -51,6 +51,7 @@
             this.btn_Original = new System.Windows.Forms.Button();
             this.blc_notas = new System.Windows.Forms.RichTextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.btn_limpardesc = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.grf_ordenacao)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.groupBox1.SuspendLayout();
@@ -255,11 +256,22 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Ordenações";
             // 
+            // btn_limpardesc
+            // 
+            this.btn_limpardesc.Location = new System.Drawing.Point(266, 286);
+            this.btn_limpardesc.Name = "btn_limpardesc";
+            this.btn_limpardesc.Size = new System.Drawing.Size(100, 23);
+            this.btn_limpardesc.TabIndex = 21;
+            this.btn_limpardesc.Text = "Limpar descrição";
+            this.btn_limpardesc.UseVisualStyleBackColor = true;
+            this.btn_limpardesc.Click += new System.EventHandler(this.btn_limpardesc_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.btn_limpardesc);
             this.Controls.Add(this.blc_notas);
             this.Controls.Add(this.btn_Original);
             this.Controls.Add(this.label3);
@@ -310,6 +322,7 @@
         private System.Windows.Forms.Button btn_Original;
         private System.Windows.Forms.RichTextBox blc_notas;
         private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Button btn_limpardesc;
     }
 }
 
